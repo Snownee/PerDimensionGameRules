@@ -1,0 +1,39 @@
+{
+  "schemaVersion": 1,
+  "id": "per-world-game-rules",
+  "version": "${version}",
+
+  "name": "Per-World Game Rules",
+  "description": "Adds per-world game rules - /pwgamerule command",
+  "authors": ["Snownee"],
+  "contact": {
+    "homepage": "https://www.curseforge.com/minecraft/mc-mods/per-world-game-rules",
+    "sources": "https://github.com/Snownee/PerWorldGameRules",
+    "issues": "https://github.com/Snownee/PerWorldGameRules/issues"
+  },
+
+  "license": "ARR",
+
+  "entrypoints": {
+    "main": [
+      "snownee.perworldgamerules.PWGameRulesMod"
+    ]
+  },
+  "mixins": ["per-world-game-rules.mixins.json"],
+  "accessWidener": "per-world-game-rules.accesswidener",
+
+  "depends": {
+    "fabric-api": "*",
+    "kiwi": ">=8.3",
+    "minecraft": ">=1.19.2",
+    "java": ">=17"
+  },
+
+  "custom": {
+    "modmenu": {
+      "links": {
+        "modmenu.discord": "https://discord.gg/rRBvGkz"
+      }
+    }
+  }
+}
