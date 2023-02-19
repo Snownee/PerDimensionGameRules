@@ -1,4 +1,4 @@
-package snownee.perworldgamerules;
+package snownee.pdgamerules;
 
 import java.util.Map;
 
@@ -13,15 +13,15 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.world.level.GameRules;
 import snownee.kiwi.config.KiwiConfigManager;
 
-public class PWGameRuleCommand {
+public class PDGameRuleCommand {
 	public static void register(CommandDispatcher<CommandSourceStack> commandDispatcher) {
-		final LiteralArgumentBuilder<CommandSourceStack> literalArgumentBuilder = Commands.literal("pwgamerule").requires(commandSourceStack -> commandSourceStack.hasPermission(2));
+		final LiteralArgumentBuilder<CommandSourceStack> literalArgumentBuilder = Commands.literal("pdgamerule").requires(commandSourceStack -> commandSourceStack.hasPermission(2));
 		GameRules.visitGameRuleTypes(new GameRules.GameRuleTypeVisitor() {
 
 			@Override
 			public <T extends GameRules.Value<T>> void visit(GameRules.Key<T> key, GameRules.Type<T> type) {
-				if (PWGameRulesMod.isSupported(key)) {
-					literalArgumentBuilder.then((Commands.literal(key.getId()).executes(commandContext -> PWGameRuleCommand.queryRule(commandContext.getSource(), key))).then(type.createArgument("value").executes(commandContext -> PWGameRuleCommand.setRule(commandContext, key))));
+				if (PDGameRulesMod.isSupported(key)) {
+					literalArgumentBuilder.then((Commands.literal(key.getId()).executes(commandContext -> PDGameRuleCommand.queryRule(commandContext.getSource(), key))).then(type.createArgument("value").executes(commandContext -> PDGameRuleCommand.setRule(commandContext, key))));
 				}
 			}
 
@@ -34,10 +34,10 @@ public class PWGameRuleCommand {
 		T value = commandSourceStack.getLevel().getGameRules().getRule(key).type.createRule();
 		value.setFromArgument(commandContext, "value");
 		String dimension = commandSourceStack.getLevel().dimension().location().toString();
-		Map<String, Object> map = PWGameRulesConfig.rules.computeIfAbsent(dimension, k -> Maps.newHashMap());
+		Map<String, Object> map = PDGameRulesConfig.rules.computeIfAbsent(dimension, k -> Maps.newHashMap());
 		map.put(key.getId(), value.serialize());
-		KiwiConfigManager.getHandler(PWGameRulesConfig.class).save();
-		PWGameRulesMod.generation++;
+		KiwiConfigManager.getHandler(PDGameRulesConfig.class).save();
+		PDGameRulesMod.generation++;
 		commandSourceStack.sendSuccess(Component.translatable("commands.gamerule.set", key.getId(), value.toString()), true);
 		return value.getCommandResult();
 	}

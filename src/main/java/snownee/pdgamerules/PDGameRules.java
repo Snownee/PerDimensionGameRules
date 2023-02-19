@@ -1,4 +1,4 @@
-package snownee.perworldgamerules;
+package snownee.pdgamerules;
 
 import java.util.Map;
 
@@ -7,12 +7,12 @@ import com.google.common.cache.CacheBuilder;
 
 import net.minecraft.world.level.GameRules;
 
-public class PerWorldGameRules extends GameRules {
+public class PDGameRules extends GameRules {
 	private final GameRules parent;
 	private final String dimension;
 	private final Cache<Key<?>, Value<?>> cache = CacheBuilder.newBuilder().build();
 
-	public PerWorldGameRules(GameRules parent, String dimension) {
+	public PDGameRules(GameRules parent, String dimension) {
 		super(Map.of());
 		this.parent = parent;
 		this.dimension = dimension;
@@ -23,7 +23,7 @@ public class PerWorldGameRules extends GameRules {
 	public <T extends Value<T>> T getRule(Key<T> key) {
 		try {
 			return (T) cache.get(key, () -> {
-				Map<String, Object> rules = PWGameRulesConfig.rules.getOrDefault(dimension, Map.of());
+				Map<String, Object> rules = PDGameRulesConfig.rules.getOrDefault(dimension, Map.of());
 				Object value = rules.get(key.getId());
 				if (value == null) {
 					return parent.getRule(key);

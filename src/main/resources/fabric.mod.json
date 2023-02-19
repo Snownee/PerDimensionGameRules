@@ -1,26 +1,26 @@
 {
   "schemaVersion": 1,
-  "id": "per-world-game-rules",
+  "id": "pdgamerules",
   "version": "${version}",
 
-  "name": "Per-World Game Rules",
-  "description": "Adds per-world game rules - /pwgamerule command",
+  "name": "Per-Dimension Game Rules",
+  "description": "Adds dimensional game rules - /pdgamerule command",
   "authors": ["Snownee"],
   "contact": {
     "homepage": "https://www.curseforge.com/minecraft/mc-mods/per-world-game-rules",
-    "sources": "https://github.com/Snownee/PerWorldGameRules",
-    "issues": "https://github.com/Snownee/PerWorldGameRules/issues"
+    "sources": "https://github.com/Snownee/PerDimensionGameRules",
+    "issues": "https://github.com/Snownee/PerDimensionGameRules/issues"
   },
 
   "license": "ARR",
 
   "entrypoints": {
     "main": [
-      "snownee.perworldgamerules.PWGameRulesMod"
+      "snownee.pdgamerules.PDGameRulesMod"
     ]
   },
-  "mixins": ["per-world-game-rules.mixins.json"],
-  "accessWidener": "per-world-game-rules.accesswidener",
+  "mixins": ["pdgamerules.mixins.json"],
+  "accessWidener": "pdgamerules.accesswidener",
 
   "depends": {
     "fabric-api": "*",

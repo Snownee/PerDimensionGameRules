@@ -1,7 +1,7 @@
 {
   "required": true,
   "minVersion": "0.8",
-  "package": "snownee.perworldgamerules.mixin",
+  "package": "snownee.pdgamerules.mixin",
   "compatibilityLevel": "JAVA_16",
   "mixins": [
     "GameRulesValueMixin",

@@ -1,4 +1,4 @@
-package snownee.perworldgamerules;
+package snownee.pdgamerules;
 
 import java.util.Set;
 
@@ -11,7 +11,7 @@ import net.fabricmc.api.ModInitializer;
 import net.fabricmc.fabric.api.command.v2.CommandRegistrationCallback;
 import net.minecraft.world.level.GameRules;
 
-public class PWGameRulesMod implements ModInitializer {
+public class PDGameRulesMod implements ModInitializer {
 
 	public static final Logger LOGGER = LogManager.getLogger("PWGameRules");
 	public static final Set<GameRules.Key<?>> UNSUPPORTED_GAME_RULES = Sets.newHashSet();
@@ -21,7 +21,7 @@ public class PWGameRulesMod implements ModInitializer {
 	public void onInitialize() {
 		UNSUPPORTED_GAME_RULES.add(GameRules.RULE_SENDCOMMANDFEEDBACK);
 		UNSUPPORTED_GAME_RULES.add(GameRules.RULE_MAX_COMMAND_CHAIN_LENGTH);
-		CommandRegistrationCallback.EVENT.register((dispatcher, registryAccess, environment) -> PWGameRuleCommand.register(dispatcher));
+		CommandRegistrationCallback.EVENT.register((dispatcher, registryAccess, environment) -> PDGameRuleCommand.register(dispatcher));
 	}
 
 	public static boolean isSupported(GameRules.Key<?> key) {
