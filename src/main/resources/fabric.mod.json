@@ -20,7 +20,6 @@
     ]
   },
   "mixins": ["pdgamerules.mixins.json"],
-  "accessWidener": "pdgamerules.accesswidener",
 
   "depends": {
     "fabric-api": "*",

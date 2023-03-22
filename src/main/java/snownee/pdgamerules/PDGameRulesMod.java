@@ -13,7 +13,7 @@ import net.minecraft.world.level.GameRules;
 
 public class PDGameRulesMod implements ModInitializer {
 
-	public static final Logger LOGGER = LogManager.getLogger("PWGameRules");
+	public static final Logger LOGGER = LogManager.getLogger("PDGameRules");
 	public static final Set<GameRules.Key<?>> UNSUPPORTED_GAME_RULES = Sets.newHashSet();
 	public static int generation = 0;
 

@@ -12,6 +12,7 @@ import net.minecraft.commands.Commands;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.level.GameRules;
 import snownee.kiwi.config.KiwiConfigManager;
+import snownee.pdgamerules.mixin.GameRulesValueAccess;
 
 public class PDGameRuleCommand {
 	public static void register(CommandDispatcher<CommandSourceStack> commandDispatcher) {
@@ -31,7 +32,7 @@ public class PDGameRuleCommand {
 
 	static <T extends GameRules.Value<T>> int setRule(CommandContext<CommandSourceStack> commandContext, GameRules.Key<T> key) {
 		CommandSourceStack commandSourceStack = commandContext.getSource();
-		T value = commandSourceStack.getLevel().getGameRules().getRule(key).type.createRule();
+		T value = ((GameRulesValueAccess<T>) commandSourceStack.getLevel().getGameRules().getRule(key)).getType().createRule();
 		value.setFromArgument(commandContext, "value");
 		String dimension = commandSourceStack.getLevel().dimension().location().toString();
 		Map<String, Object> map = PDGameRulesConfig.rules.computeIfAbsent(dimension, k -> Maps.newHashMap());
