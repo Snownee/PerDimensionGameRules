@@ -1,4 +1,0 @@
-accessWidener   v1  named
-accessible method net/minecraft/world/level/GameRules <init> (Ljava/util/Map;)V
-accessible field net/minecraft/world/level/GameRules$Value type Lnet/minecraft/world/level/GameRules$Type;
-accessible method net/minecraft/world/level/GameRules$Value deserialize (Ljava/lang/String;)V

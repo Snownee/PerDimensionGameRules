@@ -13,20 +13,20 @@ import snownee.pdgamerules.PDGameRules;
 @Mixin(Level.class)
 public class LevelMixin {
 
-	private PDGameRules pwgamerules_gameRules;
-	private int pwgamerules_generation;
+	private PDGameRules pdgamerules_gameRules;
+	private int pdgamerules_generation;
 
 	@Inject(method = "getGameRules", at = @At("HEAD"), cancellable = true)
 	private void pdgamerules_getGameRules(CallbackInfoReturnable<GameRules> ci) {
-		if (pwgamerules_generation != PDGameRulesMod.generation) {
-			pwgamerules_generation = PDGameRulesMod.generation;
-			pwgamerules_gameRules = null;
+		if (pdgamerules_generation != PDGameRulesMod.generation) {
+			pdgamerules_generation = PDGameRulesMod.generation;
+			pdgamerules_gameRules = null;
 		}
-		if (pwgamerules_gameRules == null) {
+		if (pdgamerules_gameRules == null) {
 			Level level = (Level) (Object) this;
-			pwgamerules_gameRules = new PDGameRules(level.getLevelData().getGameRules(), level.dimension().location().toString());
+			pdgamerules_gameRules = new PDGameRules(level.getLevelData().getGameRules(), level.dimension().location().toString());
 		}
-		ci.setReturnValue(pwgamerules_gameRules);
+		ci.setReturnValue(pdgamerules_gameRules);
 	}
 
 }
