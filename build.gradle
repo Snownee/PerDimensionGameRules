@@ -171,7 +171,7 @@ repositories {
     maven {
         url = "https://www.cursemaven.com"
     }
-	
+
 	maven { url "https://maven.shedaniel.me/" }
     maven {
         // Shedaniel's maven (Architectury API)
@@ -197,8 +197,8 @@ dependencies {
     // The userdev artifact is a special name and will get all sorts of transformations applied to it.
     minecraft "net.minecraftforge:forge:${minecraft_version}-${forge_version}"
     annotationProcessor "org.spongepowered:mixin:0.8.5:processor"
-    
-    implementation fg.deobf("curse.maven:kiwi-303657:4451128")
+
+    implementation fg.deobf("curse.maven:kiwi-303657:${project.kiwi_file_id}")
 	//annotationProcessor "curse.maven:kiwi-303657:4451128"
 	implementation fg.deobf("me.shedaniel:RoughlyEnoughItems-forge:${project.rei_version}")
 	implementation fg.deobf("dev.architectury:architectury-forge:${project.architectury_version}")

@@ -1,5 +1,5 @@
 modLoader="javafml"
-loaderVersion="[42,)"
+loaderVersion = "[38,)"
 license="ARR"
 
 [[mods]]
@@ -13,6 +13,6 @@ description="Adds dimensional game rules - /pdgamerule command"
 [[dependencies.pdgamerules]]
     modId="kiwi"
     mandatory=true
-    versionRange="[8.3, )"
+versionRange = "[6,)"
     ordering="NONE"
     side="BOTH"

@@ -9,7 +9,7 @@ import com.mojang.brigadier.context.CommandContext;
 
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.commands.Commands;
-import net.minecraft.network.chat.Component;
+import net.minecraft.network.chat.TranslatableComponent;
 import net.minecraft.world.level.GameRules;
 import snownee.kiwi.config.KiwiConfigManager;
 import snownee.pdgamerules.mixin.GameRulesValueAccess;
@@ -37,15 +37,15 @@ public class PDGameRuleCommand {
 		String dimension = commandSourceStack.getLevel().dimension().location().toString();
 		Map<String, Object> map = PDGameRulesConfig.rules.computeIfAbsent(dimension, k -> Maps.newHashMap());
 		map.put(key.getId(), value.serialize());
-		KiwiConfigManager.getHandler(PDGameRulesConfig.class).save();
+		KiwiConfigManager.getHandler(PDGameRulesConfig.class).getConfig().save();
 		PDGameRulesMod.generation++;
-		commandSourceStack.sendSuccess(Component.translatable("commands.gamerule.set", key.getId(), value.toString()), true);
+		commandSourceStack.sendSuccess(new TranslatableComponent("commands.gamerule.set", key.getId(), value.toString()), true);
 		return value.getCommandResult();
 	}
 
 	static <T extends GameRules.Value<T>> int queryRule(CommandSourceStack commandSourceStack, GameRules.Key<T> key) {
 		T value = commandSourceStack.getLevel().getGameRules().getRule(key);
-		commandSourceStack.sendSuccess(Component.translatable("commands.gamerule.query", key.getId(), value.toString()), false);
+		commandSourceStack.sendSuccess(new TranslatableComponent("commands.gamerule.query", key.getId(), value.toString()), false);
 		return value.getCommandResult();
 	}
 

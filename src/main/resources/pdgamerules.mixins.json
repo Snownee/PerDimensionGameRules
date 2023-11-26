@@ -10,8 +10,6 @@
     "GameRulesValueMixin",
     "LevelMixin"
   ],
-  "client": [
-  ],
   "injectors": {
     "defaultRequire": 1
   }
