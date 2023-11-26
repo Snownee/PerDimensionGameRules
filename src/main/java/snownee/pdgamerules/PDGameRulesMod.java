@@ -7,7 +7,7 @@ import org.apache.logging.log4j.Logger;
 
 import com.google.common.collect.Sets;
 
-import net.minecraft.world.level.GameRules;
+import net.minecraft.world.GameRules;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.event.RegisterCommandsEvent;
 import net.minecraftforge.fml.common.Mod;
@@ -16,7 +16,7 @@ import net.minecraftforge.fml.common.Mod;
 public class PDGameRulesMod {
 
 	public static final Logger LOGGER = LogManager.getLogger("PDGameRules");
-	public static final Set<GameRules.Key<?>> UNSUPPORTED_GAME_RULES = Sets.newHashSet();
+	public static final Set<GameRules.RuleKey<?>> UNSUPPORTED_GAME_RULES = Sets.newHashSet();
 	public static int generation = 0;
 
 	public PDGameRulesMod() {
@@ -29,7 +29,7 @@ public class PDGameRulesMod {
 		PDGameRuleCommand.register(event.getDispatcher());
 	}
 
-	public static boolean isSupported(GameRules.Key<?> key) {
+	public static boolean isSupported(GameRules.RuleKey<?> key) {
 		return !UNSUPPORTED_GAME_RULES.contains(key);
 	}
 

@@ -7,20 +7,20 @@ import com.mojang.brigadier.CommandDispatcher;
 import com.mojang.brigadier.builder.LiteralArgumentBuilder;
 import com.mojang.brigadier.context.CommandContext;
 
-import net.minecraft.commands.CommandSourceStack;
-import net.minecraft.commands.Commands;
-import net.minecraft.network.chat.TranslatableComponent;
-import net.minecraft.world.level.GameRules;
+import net.minecraft.command.CommandSource;
+import net.minecraft.command.Commands;
+import net.minecraft.util.text.TranslationTextComponent;
+import net.minecraft.world.GameRules;
 import snownee.kiwi.config.KiwiConfigManager;
 import snownee.pdgamerules.mixin.GameRulesValueAccess;
 
 public class PDGameRuleCommand {
-	public static void register(CommandDispatcher<CommandSourceStack> commandDispatcher) {
-		final LiteralArgumentBuilder<CommandSourceStack> literalArgumentBuilder = Commands.literal("pdgamerule").requires(commandSourceStack -> commandSourceStack.hasPermission(2));
-		GameRules.visitGameRuleTypes(new GameRules.GameRuleTypeVisitor() {
+	public static void register(CommandDispatcher<CommandSource> commandDispatcher) {
+		final LiteralArgumentBuilder<CommandSource> literalArgumentBuilder = Commands.literal("pdgamerule").requires(commandSourceStack -> commandSourceStack.hasPermission(2));
+		GameRules.visitGameRuleTypes(new GameRules.IRuleEntryVisitor() {
 
 			@Override
-			public <T extends GameRules.Value<T>> void visit(GameRules.Key<T> key, GameRules.Type<T> type) {
+			public <T extends GameRules.RuleValue<T>> void visit(GameRules.RuleKey<T> key, GameRules.RuleType<T> type) {
 				if (PDGameRulesMod.isSupported(key)) {
 					literalArgumentBuilder.then((Commands.literal(key.getId()).executes(commandContext -> PDGameRuleCommand.queryRule(commandContext.getSource(), key))).then(type.createArgument("value").executes(commandContext -> PDGameRuleCommand.setRule(commandContext, key))));
 				}
@@ -30,8 +30,8 @@ public class PDGameRuleCommand {
 		commandDispatcher.register(literalArgumentBuilder);
 	}
 
-	static <T extends GameRules.Value<T>> int setRule(CommandContext<CommandSourceStack> commandContext, GameRules.Key<T> key) {
-		CommandSourceStack commandSourceStack = commandContext.getSource();
+	static <T extends GameRules.RuleValue<T>> int setRule(CommandContext<CommandSource> commandContext, GameRules.RuleKey<T> key) {
+		CommandSource commandSourceStack = commandContext.getSource();
 		T value = ((GameRulesValueAccess<T>) commandSourceStack.getLevel().getGameRules().getRule(key)).getType().createRule();
 		value.setFromArgument(commandContext, "value");
 		String dimension = commandSourceStack.getLevel().dimension().location().toString();
@@ -39,13 +39,13 @@ public class PDGameRuleCommand {
 		map.put(key.getId(), value.serialize());
 		KiwiConfigManager.getHandler(PDGameRulesConfig.class).getConfig().save();
 		PDGameRulesMod.generation++;
-		commandSourceStack.sendSuccess(new TranslatableComponent("commands.gamerule.set", key.getId(), value.toString()), true);
+		commandSourceStack.sendSuccess(new TranslationTextComponent("commands.gamerule.set", key.getId(), value.toString()), true);
 		return value.getCommandResult();
 	}
 
-	static <T extends GameRules.Value<T>> int queryRule(CommandSourceStack commandSourceStack, GameRules.Key<T> key) {
+	static <T extends GameRules.RuleValue<T>> int queryRule(CommandSource commandSourceStack, GameRules.RuleKey<T> key) {
 		T value = commandSourceStack.getLevel().getGameRules().getRule(key);
-		commandSourceStack.sendSuccess(new TranslatableComponent("commands.gamerule.query", key.getId(), value.toString()), false);
+		commandSourceStack.sendSuccess(new TranslationTextComponent("commands.gamerule.query", key.getId(), value.toString()), false);
 		return value.getCommandResult();
 	}
 
