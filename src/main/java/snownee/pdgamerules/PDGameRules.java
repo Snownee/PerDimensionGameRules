@@ -31,7 +31,7 @@ public class PDGameRules extends GameRules {
 	public <T extends RuleValue<T>> T getRule(RuleKey<T> key) {
 		try {
 			return (T) cache.get(key, () -> {
-				Map<String, Object> rules = PDGameRulesConfig.rules.getOrDefault(dimension, ImmutableMap.of());
+				Map<String, Object> rules = PDGameRulesMod.getCfg().rules.getOrDefault(dimension, ImmutableMap.of());
 				Object value = rules.get(key.getId());
 				if (value == null) {
 					return parent.getRule(key);

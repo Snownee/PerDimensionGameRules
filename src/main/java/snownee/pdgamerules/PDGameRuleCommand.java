@@ -35,7 +35,7 @@ public class PDGameRuleCommand {
 		T value = ((GameRulesValueAccess<T>) commandSourceStack.getLevel().getGameRules().getRule(key)).getType().createRule();
 		value.setFromArgument(commandContext, "value");
 		String dimension = commandSourceStack.getLevel().dimension().location().toString();
-		Map<String, Object> map = PDGameRulesConfig.rules.computeIfAbsent(dimension, k -> Maps.newHashMap());
+		Map<String, Object> map = PDGameRulesMod.getCfg().rules.computeIfAbsent(dimension, k -> Maps.newHashMap());
 		map.put(key.getId(), value.serialize());
 		KiwiConfigManager.getHandler(PDGameRulesConfig.class).getConfig().save();
 		PDGameRulesMod.generation++;

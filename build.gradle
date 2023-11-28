@@ -172,7 +172,7 @@ repositories {
         url = "https://www.cursemaven.com"
     }
 
-	maven { url "https://maven.shedaniel.me/" }
+    maven { url "https://maven.shedaniel.me/" }
     maven {
         // Shedaniel's maven (Architectury API)
         url = "https://maven.architectury.dev"
@@ -199,9 +199,10 @@ dependencies {
     annotationProcessor "org.spongepowered:mixin:0.8.5:processor"
 
     implementation fg.deobf("curse.maven:kiwi-303657:${project.kiwi_file_id}")
-	//annotationProcessor "curse.maven:kiwi-303657:4451128"
-	implementation fg.deobf("me.shedaniel:RoughlyEnoughItems-forge:${project.rei_version}")
-	implementation fg.deobf("me.shedaniel.cloth:cloth-config-forge:${project.cloth_config_version}")
+    //implementation fg.deobf("dev.architectury:architectury-forge:${project.architectury_version}")
+    //annotationProcessor "curse.maven:kiwi-303657:4451128"
+    implementation fg.deobf("me.shedaniel:RoughlyEnoughItems-forge:${project.rei_version}")
+    implementation(fg.deobf("me.shedaniel.cloth:cloth-config-forge:${project.cloth_config_version}"))
 }
 
 processResources {
@@ -248,7 +249,7 @@ modrinth {
     versionNumber = project.mod_version // You don't need to set this manually. Will fail if Modrinth has this version already
     versionType = "release" // This is the default -- can also be `beta` or `alpha`
     uploadFile = jar // With Loom, this MUST be set to `remapJar` instead of `jar`!
-    gameVersions = ["1.19.2"] // Must be an array, even with only one version
+    gameVersions = ["1.16.5"] // Must be an array, even with only one version
     loaders = ["forge"] // Must also be an array - no need to specify this if you're using Loom or ForgeGradle
     dependencies { // A special DSL for creating dependencies
         // scope.type

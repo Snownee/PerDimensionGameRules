@@ -4,11 +4,10 @@ import java.util.Map;
 
 import com.google.common.collect.ImmutableMap;
 
-import snownee.kiwi.config.KiwiConfig;
+import me.shedaniel.autoconfig.ConfigData;
+import me.shedaniel.autoconfig.annotation.Config;
 
-@KiwiConfig
-public class PDGameRulesConfig {
-
-	public static Map<String, Map<String, Object>> rules = ImmutableMap.of("minecraft:the_nether", ImmutableMap.of("doMobLoot", "false"));
-
+@Config(name = PDGameRulesMod.ID)
+public class PDGameRulesConfig implements ConfigData {
+	public Map<String, Map<String, Object>> rules = ImmutableMap.of("minecraft:the_nether", ImmutableMap.of("doMobLoot", "false"));
 }
