@@ -21,6 +21,7 @@ public class LevelMixin {
 	public boolean isClientSide;
 	@Unique
 	private PDGameRules pdgamerules_gameRules;
+	@Unique
 	private int pdgamerules_generation;
 
 	@Inject(method = "getGameRules", at = @At("HEAD"), cancellable = true)

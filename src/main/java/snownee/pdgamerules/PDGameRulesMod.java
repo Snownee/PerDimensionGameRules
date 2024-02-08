@@ -10,7 +10,9 @@ import com.mojang.logging.LogUtils;
 import net.fabricmc.api.ModInitializer;
 import net.fabricmc.fabric.api.command.v2.CommandRegistrationCallback;
 import net.minecraft.world.level.GameRules;
+import snownee.kiwi.Mod;
 
+@Mod("pdgamerules")
 public class PDGameRulesMod implements ModInitializer {
 
 	public static final Logger LOGGER = LogUtils.getLogger();

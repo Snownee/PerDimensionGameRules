@@ -10,11 +10,9 @@ import com.google.common.cache.CacheBuilder;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.world.level.GameRules;
-import snownee.kiwi.Mod;
 import snownee.pdgamerules.mixin.GameRulesAccess;
 import snownee.pdgamerules.mixin.GameRulesValueAccess;
 
-@Mod("pdgamerules")
 public class PDGameRules extends GameRules {
 	private final GameRules parent;
 	private final String dimension;
