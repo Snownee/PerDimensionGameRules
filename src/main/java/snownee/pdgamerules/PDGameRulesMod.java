@@ -2,10 +2,10 @@ package snownee.pdgamerules;
 
 import java.util.Set;
 
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
+import org.slf4j.Logger;
 
 import com.google.common.collect.Sets;
+import com.mojang.logging.LogUtils;
 
 import net.minecraft.world.level.GameRules;
 import net.minecraftforge.common.MinecraftForge;
@@ -15,7 +15,7 @@ import net.minecraftforge.fml.common.Mod;
 @Mod("pdgamerules")
 public class PDGameRulesMod {
 
-	public static final Logger LOGGER = LogManager.getLogger("PDGameRules");
+	public static final Logger LOGGER = LogUtils.getLogger();
 	public static final Set<GameRules.Key<?>> UNSUPPORTED_GAME_RULES = Sets.newHashSet();
 	public static int generation = 0;
 
