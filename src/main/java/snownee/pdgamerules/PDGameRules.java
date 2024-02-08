@@ -8,19 +8,24 @@ import com.google.common.cache.Cache;
 import com.google.common.cache.CacheBuilder;
 
 import net.minecraft.nbt.CompoundTag;
+import net.minecraft.resources.ResourceKey;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.world.level.GameRules;
+import net.minecraft.world.level.Level;
+import snownee.kiwi.config.KiwiConfigManager;
 import snownee.pdgamerules.mixin.GameRulesAccess;
 import snownee.pdgamerules.mixin.GameRulesValueAccess;
 
 public class PDGameRules extends GameRules {
 	private final GameRules parent;
 	private final String dimension;
+	private final boolean overworld;
 	private final Cache<Key<?>, Value<?>> cache = CacheBuilder.newBuilder().build();
 
-	public PDGameRules(GameRules parent, String dimension) {
+	public PDGameRules(GameRules parent, ResourceKey<Level> dimension) {
 		this.parent = parent;
-		this.dimension = dimension;
+		this.dimension = dimension.location().toString();
+		this.overworld = dimension == Level.OVERWORLD;
 		((GameRulesAccess) this).setRules(Map.of());
 	}
 
@@ -34,12 +39,17 @@ public class PDGameRules extends GameRules {
 				if (value == null) {
 					return parent.getRule(key);
 				}
+				if (overworld && !PDGameRulesMod.canUseInOverworld(key)) {
+					PDGameRulesConfig.rules.get(dimension).remove(key.getId());
+					KiwiConfigManager.getHandler(PDGameRulesConfig.class).save();
+					return parent.getRule(key);
+				}
 				GameRulesValueAccess<T> rule = (GameRulesValueAccess<T>) parent.getRule(key);
 				rule = (GameRulesValueAccess<T>) rule.getType().createRule();
 				rule.callDeserialize(String.valueOf(value));
 				return (T) rule;
 			});
-		} catch (Exception e) {
+		} catch (Exception ignored) {
 		}
 		return parent.getRule(key);
 	}
