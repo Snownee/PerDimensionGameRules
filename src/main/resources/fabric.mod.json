@@ -23,8 +23,7 @@
 
   "depends": {
     "fabric-api": "*",
-    "kiwi": ">=8.3",
-    "minecraft": ">=1.19.2",
+    "kiwi": ">=11.1",
     "java": ">=17"
   },
 
