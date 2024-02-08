@@ -20,24 +20,25 @@ public class LevelMixin {
 	@Final
 	public boolean isClientSide;
 	@Unique
-	private PDGameRules pdgamerules_gameRules;
+	private PDGameRules pdgamerules$gameRules;
 	@Unique
-	private int pdgamerules_generation;
+	private int pdgamerules$generation;
 
 	@Inject(method = "getGameRules", at = @At("HEAD"), cancellable = true)
 	private void pdgamerules_getGameRules(CallbackInfoReturnable<GameRules> ci) {
 		if (isClientSide) {
 			return;
 		}
-		if (pdgamerules_generation != PDGameRulesMod.generation) {
-			pdgamerules_generation = PDGameRulesMod.generation;
-			pdgamerules_gameRules = null;
+		if (pdgamerules$generation != PDGameRulesMod.getGeneration()) {
+			pdgamerules$generation = PDGameRulesMod.getGeneration();
+			pdgamerules$gameRules = null;
+			PDGameRulesMod.LOGGER.debug("Invalidating game rules cache");
 		}
-		if (pdgamerules_gameRules == null) {
+		if (pdgamerules$gameRules == null) {
 			Level level = (Level) (Object) this;
-			pdgamerules_gameRules = new PDGameRules(level.getLevelData().getGameRules(), level.dimension().location().toString());
+			pdgamerules$gameRules = new PDGameRules(level.getLevelData().getGameRules(), level.dimension());
 		}
-		ci.setReturnValue(pdgamerules_gameRules);
+		ci.setReturnValue(pdgamerules$gameRules);
 	}
 
 }
