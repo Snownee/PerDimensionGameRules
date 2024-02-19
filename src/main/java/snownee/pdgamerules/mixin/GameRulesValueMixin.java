@@ -1,5 +1,6 @@
 package snownee.pdgamerules.mixin;
 
+import org.jetbrains.annotations.Nullable;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
@@ -13,8 +14,10 @@ import snownee.pdgamerules.PDGameRulesMod;
 public class GameRulesValueMixin {
 
 	@Inject(method = "onChanged", at = @At("HEAD"))
-	private void pdgamerules_onChanged(MinecraftServer minecraftServer, CallbackInfo ci) {
-		PDGameRulesMod.generation++;
+	private void pdgamerules_onChanged(@Nullable MinecraftServer server, CallbackInfo ci) {
+		if (server != null) {
+			PDGameRulesMod.iterateGeneration();
+		}
 	}
 
 }
