@@ -27,7 +27,15 @@ public class PDDerivedGameRuleData {
 			ResourceKey.codec(Registries.DIMENSION),
 			PDDerivedGameRuleData.CODEC);
 
-	public PDDerivedGameRuleData(boolean independentDayTime, boolean independentWeather, long dayTime, int clearWeatherTime, boolean raining, int rainTime, boolean thundering, int thunderTime) {
+	public PDDerivedGameRuleData(
+			boolean independentDayTime,
+			boolean independentWeather,
+			long dayTime,
+			int clearWeatherTime,
+			boolean raining,
+			int rainTime,
+			boolean thundering,
+			int thunderTime) {
 		this.independentDayTime = independentDayTime;
 		this.independentWeather = independentWeather;
 		this.dayTime = dayTime;

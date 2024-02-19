@@ -1,18 +1,18 @@
-modLoader="javafml"
+modLoader = "javafml"
 loaderVersion = "[46,)"
-license="ARR"
+license = "ARR"
 
 [[mods]]
-modId="pdgamerules"
-version="${file.jarVersion}"
-displayName="Per-Dimension Game Rules"
-authors="Snownee"
-displayURL="https://www.curseforge.com/minecraft/mc-mods/per-world-game-rules"
-description="Adds dimensional game rules - /pdgamerule command"
+modId = "pdgamerules"
+version = "${file.jarVersion}"
+displayName = "Per-Dimension Game Rules"
+authors = "Snownee"
+displayURL = "https://www.curseforge.com/minecraft/mc-mods/per-world-game-rules"
+description = "Adds dimensional game rules - /pdgamerule command"
 
 [[dependencies.pdgamerules]]
-    modId="kiwi"
-    mandatory=true
-    versionRange="[11.1, )"
-    ordering="NONE"
-    side="BOTH"
+modId = "kiwi"
+mandatory = true
+versionRange = "[11.1, )"
+ordering = "NONE"
+side = "BOTH"

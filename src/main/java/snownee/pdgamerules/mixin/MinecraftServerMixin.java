@@ -29,13 +29,33 @@ import snownee.pdgamerules.duck.PDPrimaryLevelData;
 
 @Mixin(MinecraftServer.class)
 public class MinecraftServerMixin {
-	@Inject(method = "createLevels", at = @At(
+	@Inject(
+			method = "createLevels", at = @At(
 			value = "INVOKE",
 			target = "Lnet/minecraft/world/level/storage/DerivedLevelData;<init>(Lnet/minecraft/world/level/storage/WorldData;Lnet/minecraft/world/level/storage/ServerLevelData;)V",
 			shift = At.Shift.BY,
 			by = 2
 	), locals = LocalCapture.CAPTURE_FAILHARD)
-	private void pdgamerules_createLevels(ChunkProgressListener p_129816_, CallbackInfo ci, ServerLevelData serverleveldata, boolean flag, Registry<LevelStem> registry, WorldOptions worldoptions, long i, long j, List<CustomSpawner> list, LevelStem levelstem, ServerLevel serverlevel, DimensionDataStorage dimensiondatastorage, WorldBorder worldborder, RandomSequences randomsequences, Iterator<Map.Entry<ResourceKey<LevelStem>, LevelStem>> var16, Map.Entry<ResourceKey<LevelStem>, LevelStem> entry, ResourceKey<LevelStem> resourcekey, ResourceKey<Level> resourcekey1, DerivedLevelData derivedleveldata) {
+	private void pdgamerules_createLevels(
+			ChunkProgressListener p_129816_,
+			CallbackInfo ci,
+			ServerLevelData serverleveldata,
+			boolean flag,
+			Registry<LevelStem> registry,
+			WorldOptions worldoptions,
+			long i,
+			long j,
+			List<CustomSpawner> list,
+			LevelStem levelstem,
+			ServerLevel serverlevel,
+			DimensionDataStorage dimensiondatastorage,
+			WorldBorder worldborder,
+			RandomSequences randomsequences,
+			Iterator<Map.Entry<ResourceKey<LevelStem>, LevelStem>> var16,
+			Map.Entry<ResourceKey<LevelStem>, LevelStem> entry,
+			ResourceKey<LevelStem> resourcekey,
+			ResourceKey<Level> resourcekey1,
+			DerivedLevelData derivedleveldata) {
 		if (serverleveldata instanceof PDPrimaryLevelData primaryLevelData) {
 			((PDDerivedLevelData) derivedleveldata).pdgamerules$putData(primaryLevelData.pdgamerules$getOrCreateData(resourcekey1));
 		}

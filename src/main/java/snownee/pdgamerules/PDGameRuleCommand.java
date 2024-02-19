@@ -18,8 +18,8 @@ import snownee.kiwi.config.KiwiConfigManager;
 import snownee.pdgamerules.mixin.GameRulesValueAccess;
 
 public class PDGameRuleCommand {
-	private static final SimpleCommandExceptionType ERROR_OVERWORLD = new SimpleCommandExceptionType(
-			Component.translatable("commands.pdgamerules.overworldCheck.failed"));
+	private static final SimpleCommandExceptionType ERROR_OVERWORLD = new SimpleCommandExceptionType(Component.translatable(
+			"commands.pdgamerules.overworldCheck.failed"));
 
 	public static void register(CommandDispatcher<CommandSourceStack> commandDispatcher) {
 		final LiteralArgumentBuilder<CommandSourceStack> literalArgumentBuilder = Commands.literal("pdgamerule")
@@ -31,19 +31,18 @@ public class PDGameRuleCommand {
 				if (!PDGameRulesMod.isSupported(key)) {
 					return;
 				}
-				literalArgumentBuilder.then((Commands.literal(key.getId())
-						.executes(commandContext -> PDGameRuleCommand.queryRule(commandContext.getSource(), key)))
-						.then(type.createArgument("value")
-								.executes(commandContext -> PDGameRuleCommand.setRule(commandContext, key)))
-						.then(Commands.literal("clear!")
-								.executes(commandContext -> PDGameRuleCommand.clearRule(commandContext, key))));
+				literalArgumentBuilder.then(Commands.literal(key.getId())
+						.executes(commandContext -> PDGameRuleCommand.queryRule(commandContext.getSource(), key))
+						.then(type.createArgument("value").executes(commandContext -> PDGameRuleCommand.setRule(commandContext, key)))
+						.then(Commands.literal("clear!").executes(commandContext -> PDGameRuleCommand.clearRule(commandContext, key))));
 			}
 
 		});
 		commandDispatcher.register(literalArgumentBuilder);
 	}
 
-	static <T extends GameRules.Value<T>> int setRule(CommandContext<CommandSourceStack> commandContext, GameRules.Key<T> key) throws CommandSyntaxException {
+	static <T extends GameRules.Value<T>> int setRule(
+			CommandContext<CommandSourceStack> commandContext, GameRules.Key<T> key) throws CommandSyntaxException {
 		CommandSourceStack commandSourceStack = commandContext.getSource();
 		checkOverworld(commandSourceStack, key);
 		T value = ((GameRulesValueAccess<T>) commandSourceStack.getLevel().getGameRules().getRule(key)).getType().createRule();
@@ -59,7 +58,8 @@ public class PDGameRuleCommand {
 		return value.getCommandResult();
 	}
 
-	static <T extends GameRules.Value<T>> int clearRule(CommandContext<CommandSourceStack> commandContext, GameRules.Key<T> key) throws CommandSyntaxException {
+	static <T extends GameRules.Value<T>> int clearRule(
+			CommandContext<CommandSourceStack> commandContext, GameRules.Key<T> key) throws CommandSyntaxException {
 		CommandSourceStack commandSourceStack = commandContext.getSource();
 		checkOverworld(commandSourceStack, key);
 		String dimension = commandSourceStack.getLevel().dimension().location().toString();
@@ -75,7 +75,8 @@ public class PDGameRuleCommand {
 		return 1;
 	}
 
-	static <T extends GameRules.Value<T>> int queryRule(CommandSourceStack commandSourceStack, GameRules.Key<T> key) throws CommandSyntaxException {
+	static <T extends GameRules.Value<T>> int queryRule(
+			CommandSourceStack commandSourceStack, GameRules.Key<T> key) throws CommandSyntaxException {
 		checkOverworld(commandSourceStack, key);
 		T value = commandSourceStack.getLevel().getGameRules().getRule(key);
 		commandSourceStack.sendSuccess(() -> Component.translatable("commands.gamerule.query", key.getId(), value.toString()), false);
