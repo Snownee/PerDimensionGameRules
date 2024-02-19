@@ -1,37 +1,36 @@
 {
-  "schemaVersion": 1,
-  "id": "pdgamerules",
-  "version": "${version}",
-
-  "name": "Per-Dimension Game Rules",
-  "description": "Adds dimensional game rules - /pdgamerule command",
-  "authors": ["Snownee"],
-  "contact": {
-    "homepage": "https://www.curseforge.com/minecraft/mc-mods/per-world-game-rules",
-    "sources": "https://github.com/Snownee/PerDimensionGameRules",
-    "issues": "https://github.com/Snownee/PerDimensionGameRules/issues"
-  },
-
-  "license": "ARR",
-
-  "entrypoints": {
-    "main": [
-      "snownee.pdgamerules.PDGameRulesMod"
-    ]
-  },
-  "mixins": ["pdgamerules.mixins.json"],
-
-  "depends": {
-    "fabric-api": "*",
-    "kiwi": ">=11.1",
-    "java": ">=17"
-  },
-
-  "custom": {
-    "modmenu": {
-      "links": {
-        "modmenu.discord": "https://discord.gg/rRBvGkz"
-      }
-    }
-  }
+	"schemaVersion": 1,
+	"id": "pdgamerules",
+	"version": "${version}",
+	"name": "Per-Dimension Game Rules",
+	"description": "Adds dimensional game rules - /pdgamerule command",
+	"authors": [
+		"Snownee"
+	],
+	"contact": {
+		"homepage": "https://www.curseforge.com/minecraft/mc-mods/per-world-game-rules",
+		"sources": "https://github.com/Snownee/PerDimensionGameRules",
+		"issues": "https://github.com/Snownee/PerDimensionGameRules/issues"
+	},
+	"license": "ARR",
+	"entrypoints": {
+		"main": [
+			"snownee.pdgamerules.PDGameRulesMod"
+		]
+	},
+	"mixins": [
+		"pdgamerules.mixins.json"
+	],
+	"depends": {
+		"fabric-api": "*",
+		"kiwi": ">=11.1",
+		"java": ">=17"
+	},
+	"custom": {
+		"modmenu": {
+			"links": {
+				"modmenu.discord": "https://discord.gg/rRBvGkz"
+			}
+		}
+	}
 }

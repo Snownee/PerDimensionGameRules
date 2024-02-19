@@ -31,7 +31,11 @@ public abstract class ServerLevelMixin {
 	private ServerLevelData serverLevelData;
 
 	//TODO: use MixinExtras after moving to NeoForge
-	@Redirect(method = "tickTime", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/level/storage/WritableLevelData;getGameRules()Lnet/minecraft/world/level/GameRules;"))
+	@Redirect(
+			method = "tickTime",
+			at = @At(
+					value = "INVOKE",
+					target = "Lnet/minecraft/world/level/storage/WritableLevelData;getGameRules()Lnet/minecraft/world/level/GameRules;"))
 	private GameRules pdgamerules_getGameRules(WritableLevelData levelData) {
 		return ((ServerLevel) (Object) this).getGameRules();
 	}

@@ -32,8 +32,8 @@ public class MinecraftServerMixin {
 			at = @At(
 					value = "INVOKE",
 					target = "Lnet/minecraft/world/level/storage/DerivedLevelData;<init>" +
-							 "(Lnet/minecraft/world/level/storage/WorldData;" +
-							 "Lnet/minecraft/world/level/storage/ServerLevelData;)V",
+							"(Lnet/minecraft/world/level/storage/WorldData;" +
+							"Lnet/minecraft/world/level/storage/ServerLevelData;)V",
 					shift = At.Shift.BY,
 					by = 2
 			),

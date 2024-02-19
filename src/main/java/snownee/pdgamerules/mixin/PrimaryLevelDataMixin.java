@@ -33,7 +33,17 @@ public class PrimaryLevelDataMixin implements PDPrimaryLevelData {
 	private final Map<ResourceKey<Level>, PDDerivedGameRuleData> pdgamerules$dataMap = Maps.newHashMap();
 
 	@Inject(method = "parse", at = @At("RETURN"))
-	private static <T> void pdgamerules_parse(Dynamic<T> dynamic, DataFixer p_78532_, int p_78533_, CompoundTag p_78534_, LevelSettings p_78535_, LevelVersion p_78536_, PrimaryLevelData.SpecialWorldProperty p_250651_, WorldOptions p_251864_, Lifecycle p_78538_, CallbackInfoReturnable<PrimaryLevelData> cir) {
+	private static <T> void pdgamerules_parse(
+			Dynamic<T> dynamic,
+			DataFixer p_78532_,
+			int p_78533_,
+			CompoundTag p_78534_,
+			LevelSettings p_78535_,
+			LevelVersion p_78536_,
+			PrimaryLevelData.SpecialWorldProperty p_250651_,
+			WorldOptions p_251864_,
+			Lifecycle p_78538_,
+			CallbackInfoReturnable<PrimaryLevelData> cir) {
 		if (cir.getReturnValue() instanceof PDPrimaryLevelData data) {
 			Dynamic<T> rulesDynamic = dynamic.get("PDGameRules").orElseEmptyMap();
 			data.pdgamerules$putData(PDDerivedGameRuleData.DATA_MAP_CODEC.decode(rulesDynamic).result().orElseThrow().getFirst());
