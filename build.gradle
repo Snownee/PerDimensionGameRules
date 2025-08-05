@@ -1,17 +1,29 @@
 plugins {
-    id 'fabric-loom' version '1.1-SNAPSHOT'
+    id 'java'
+    id 'fabric-loom' version '1.11-SNAPSHOT'
     id 'maven-publish'
     id "me.shedaniel.unified-publishing" version "0.1.+"
 }
 
-sourceCompatibility = JavaVersion.VERSION_17
-targetCompatibility = JavaVersion.VERSION_17
+sourceCompatibility = JavaVersion.VERSION_21
+targetCompatibility = JavaVersion.VERSION_21
 
 archivesBaseName = project.archives_base_name
 version = project.minecraft_version + "-fabric-" + project.mod_version
 group = project.maven_group
 
 repositories {
+    exclusiveContent {
+        forRepository {
+            maven {
+                name = "Modrinth"
+                url = "https://api.modrinth.com/maven"
+            }
+        }
+        filter {
+            includeGroup "maven.modrinth"
+        }
+    }
     maven {
         // Shedaniel's maven (Architectury API)
         url = "https://maven.architectury.dev"
@@ -54,8 +66,8 @@ dependencies {
 
     //modImplementation "dev.emi:emi:${emi_version}"
 
-    modImplementation "curse.maven:kiwi-549404:5019947"
-    annotationProcessor "curse.maven:kiwi-549404:5019947"
+    modImplementation("maven.modrinth:kiwi:15.1.4+fabric")
+    annotationProcessor("maven.modrinth:kiwi:15.1.4+fabric")
 
     modImplementation("dev.architectury:architectury-fabric:${project.architectury_version}")
     modApi("me.shedaniel.cloth:cloth-config-fabric:${project.cloth_config_version}") {
@@ -87,7 +99,7 @@ tasks.withType(JavaCompile).configureEach {
     it.options.encoding = "UTF-8"
 
     // Minecraft 1.18 (1.18-pre2) upwards uses Java 17.
-    it.options.release = 17
+    it.options.release = 21
 }
 
 java {
@@ -133,7 +145,7 @@ unifiedPublishing {
         version = project.mod_version // Optional, Inferred from project by default
         changelog = file("CHANGELOG.md").exists() ? file("CHANGELOG.md").text : "" // Optional, in markdown format
         releaseType = project.release_type // Optional, use "release", "beta" or "alpha"
-        gameVersions = ["1.20", "1.20.1"]
+        gameVersions = ["1.21", "1.21.1"]
         gameLoaders = ["fabric", "quilt"]
 
         mainPublication tasks.remapJar // Declares the publicated jar
