@@ -31,13 +31,6 @@ repositories {
             includeGroup "dev.architectury"
         }
     }
-    maven {
-        // saps.dev Maven (KubeJS and Rhino)
-        url = "https://maven.saps.dev/minecraft"
-        content {
-            includeGroup "dev.latvian.mods"
-        }
-    }
     maven { url "https://maven.parchmentmc.org" }
     maven { url "https://maven.shedaniel.me/" }
     maven { url = "https://maven.blamejared.com/" }
