@@ -10,7 +10,6 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
 import com.google.common.collect.Maps;
-import com.mojang.datafixers.DataFixer;
 import com.mojang.serialization.Dynamic;
 import com.mojang.serialization.Lifecycle;
 
@@ -21,7 +20,6 @@ import net.minecraft.resources.ResourceKey;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.LevelSettings;
 import net.minecraft.world.level.levelgen.WorldOptions;
-import net.minecraft.world.level.storage.LevelVersion;
 import net.minecraft.world.level.storage.PrimaryLevelData;
 import snownee.pdgamerules.PDDerivedGameRuleData;
 import snownee.pdgamerules.PDGameRulesMod;
@@ -34,16 +32,12 @@ public class PrimaryLevelDataMixin implements PDPrimaryLevelData {
 
 	@Inject(method = "parse", at = @At("RETURN"))
 	private static <T> void pdgamerules_parse(
-			Dynamic<T> dynamic,
-			DataFixer p_78532_,
-			int p_78533_,
-			CompoundTag p_78534_,
-			LevelSettings p_78535_,
-			LevelVersion p_78536_,
-			PrimaryLevelData.SpecialWorldProperty p_250651_,
-			WorldOptions p_251864_,
-			Lifecycle p_78538_,
-			CallbackInfoReturnable<PrimaryLevelData> cir) {
+			final Dynamic<T> dynamic,
+			final LevelSettings levelSettings,
+			final PrimaryLevelData.SpecialWorldProperty specialWorldProperty,
+			final WorldOptions worldOptions,
+			final Lifecycle lifecycle,
+			final CallbackInfoReturnable<PrimaryLevelData> cir) {
 		if (cir.getReturnValue() instanceof PDPrimaryLevelData data) {
 			Dynamic<T> rulesDynamic = dynamic.get("PDGameRules").orElseEmptyMap();
 			data.pdgamerules$putData(PDDerivedGameRuleData.DATA_MAP_CODEC.decode(rulesDynamic).result().orElseThrow().getFirst());
