@@ -7,6 +7,7 @@ import org.jetbrains.annotations.Nullable;
 
 import com.google.common.cache.Cache;
 import com.google.common.cache.CacheBuilder;
+import com.google.common.collect.Maps;
 
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.resources.ResourceKey;
@@ -35,7 +36,7 @@ public class PDGameRules extends GameRules {
 	public <T extends Value<T>> @NotNull T getRule(Key<T> key) {
 		try {
 			return (T) cache.get(key, () -> {
-				Map<String, Object> rules = PDGameRulesConfig.rules.getOrDefault(dimension, Map.of());
+				Map<String, Object> rules = PDGameRulesConfig.rules.getOrDefault(dimension, Maps.newHashMap());
 				Object value = rules.get(key.getId());
 				if (value == null) {
 					return parent.getRule(key);
