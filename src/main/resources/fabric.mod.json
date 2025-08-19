@@ -23,13 +23,14 @@
 	],
 	"depends": {
 		"fabric-api": "*",
-		"kiwi": ">=11.1",
-		"java": ">=17"
+		"kiwi": ">=15.1",
+		"minecraft": ">=1.21"
 	},
 	"custom": {
 		"modmenu": {
 			"links": {
-				"modmenu.discord": "https://discord.gg/rRBvGkz"
+				"modmenu.discord": "https://discord.gg/KzGQW7a",
+				"modmenu.donate": "https://ko-fi.com/snownee"
 			}
 		}
 	}
