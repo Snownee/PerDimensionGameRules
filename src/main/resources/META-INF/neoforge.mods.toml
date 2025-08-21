@@ -1,5 +1,5 @@
 modLoader = "javafml"
-loaderVersion = "[46,)"
+loaderVersion = "[1,)"
 license = "ARR"
 
 [[mods]]
@@ -16,3 +16,6 @@ mandatory = true
 versionRange = "[11.1, )"
 ordering = "NONE"
 side = "BOTH"
+
+[[mixins]]
+config = "pdgamerules.mixins.json"

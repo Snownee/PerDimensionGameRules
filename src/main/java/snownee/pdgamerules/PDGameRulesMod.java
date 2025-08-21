@@ -12,9 +12,9 @@ import com.mojang.logging.LogUtils;
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.level.GameRules;
-import net.minecraftforge.common.MinecraftForge;
-import net.minecraftforge.event.RegisterCommandsEvent;
-import net.minecraftforge.fml.common.Mod;
+import net.neoforged.fml.common.Mod;
+import net.neoforged.neoforge.common.NeoForge;
+import net.neoforged.neoforge.event.RegisterCommandsEvent;
 import snownee.pdgamerules.duck.PDDerivedLevelData;
 
 @Mod("pdgamerules")
@@ -30,7 +30,7 @@ public class PDGameRulesMod {
 		UNSUPPORTED_GAME_RULES.add(GameRules.RULE_MAX_COMMAND_CHAIN_LENGTH);
 		UNSUPPORTED_GAME_RULES_OVERWORLD.add(GameRules.RULE_DAYLIGHT);
 		UNSUPPORTED_GAME_RULES_OVERWORLD.add(GameRules.RULE_WEATHER_CYCLE);
-		MinecraftForge.EVENT_BUS.addListener(this::registerCommands);
+		NeoForge.EVENT_BUS.addListener(this::registerCommands);
 	}
 
 	private void registerCommands(RegisterCommandsEvent event) {
