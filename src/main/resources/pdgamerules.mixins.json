@@ -13,7 +13,8 @@
 		"LevelMixin",
 		"MinecraftServerMixin",
 		"PrimaryLevelDataMixin",
-		"ServerLevelMixin"
+		"ServerLevelMixin",
+		"ServerPlayerMixin"
 	],
 	"client": [
 	],
