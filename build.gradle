@@ -8,8 +8,9 @@ sourceCompatibility = JavaVersion.VERSION_17
 targetCompatibility = JavaVersion.VERSION_17
 
 archivesBaseName = project.archives_base_name
-version = project.minecraft_version + "-fabric-" + project.mod_version
+version = project.minecraft_version + "-Fabric-" + project.mod_version
 group = project.maven_group
+var realVersion = mod_version + '+fabric'
 
 repositories {
     maven {
@@ -28,15 +29,16 @@ repositories {
     }
     maven { url "https://maven.parchmentmc.org" }
     maven { url "https://maven.shedaniel.me/" }
-    maven { url = "https://maven.blamejared.com/" }
+    maven { url "https://maven.blamejared.com/" }
     maven { url "https://maven.terraformersmc.com/releases/" }
-    maven {
-        url "https://cursemaven.com"
-        content {
-            includeGroup "curse.maven"
-        }
-    }
+    maven { url "https://api.modrinth.com/maven" }
 }
+
+//configurations.all {
+//    resolutionStrategy {
+//        force("net.fabricmc:fabric-loader:$loader_version")
+//    }
+//}
 
 dependencies {
     // To change the versions see the gradle.properties file
@@ -47,21 +49,21 @@ dependencies {
     // Fabric API. This is technically optional, but you probably want it anyway.
     modImplementation "net.fabricmc.fabric-api:fabric-api:${project.fabric_version}"
 
+    implementation(annotationProcessor("io.github.llamalad7:mixinextras-fabric:0.5.0"))
+
     // modCompileOnly "me.shedaniel:RoughlyEnoughItems-api-fabric:${project.rei_version}"
-    modImplementation "me.shedaniel:RoughlyEnoughItems-fabric:${project.rei_version}"
+//    modImplementation "me.shedaniel:RoughlyEnoughItems-fabric:${project.rei_version}"
 
     //modImplementation "mezz.jei:jei-${minecraft_version}-fabric:${jei_version}"
 
-    //modImplementation "dev.emi:emi:${emi_version}"
+    modImplementation "maven.modrinth:kiwi:${project.kiwi_version}+fabric"
+    annotationProcessor "maven.modrinth:kiwi:${project.kiwi_version}+fabric"
 
-    modImplementation "curse.maven:kiwi-549404:5019947"
-    annotationProcessor "curse.maven:kiwi-549404:5019947"
-
-    modImplementation("dev.architectury:architectury-fabric:${project.architectury_version}")
-    modApi("me.shedaniel.cloth:cloth-config-fabric:${project.cloth_config_version}") {
-        exclude(group: "net.fabricmc.fabric-api")
-    }
-    modImplementation "com.terraformersmc:modmenu:${project.modmenu_version}"
+//    modImplementation("dev.architectury:architectury-fabric:${project.architectury_version}")
+//    modApi("me.shedaniel.cloth:cloth-config-fabric:${project.cloth_config_version}") {
+//        exclude(group: "net.fabricmc.fabric-api")
+//    }
+//    modImplementation "com.terraformersmc:modmenu:${project.modmenu_version}"
 }
 
 loom {
@@ -72,10 +74,10 @@ loom {
 }
 
 processResources {
-    inputs.property "version", project.mod_version
+    inputs.property "version", realVersion
 
     filesMatching("fabric.mod.json") {
-        expand "version": project.mod_version
+        expand "version": realVersion
     }
 }
 
@@ -130,7 +132,7 @@ publishing {
 unifiedPublishing {
     project {
         displayName = "[Fabric $project.supported_version] $project.mod_version"
-        version = project.mod_version // Optional, Inferred from project by default
+        version = realVersion // Optional, Inferred from project by default
         changelog = file("CHANGELOG.md").exists() ? file("CHANGELOG.md").text : "" // Optional, in markdown format
         releaseType = project.release_type // Optional, use "release", "beta" or "alpha"
         gameVersions = ["1.20", "1.20.1"]

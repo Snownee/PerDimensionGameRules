@@ -22,14 +22,14 @@
 		"pdgamerules.mixins.json"
 	],
 	"depends": {
-		"fabric-api": "*",
-		"kiwi": ">=11.1",
-		"java": ">=17"
+		"fabricloader": ">=0.16",
+		"kiwi": ">=11.1"
 	},
 	"custom": {
 		"modmenu": {
 			"links": {
-				"modmenu.discord": "https://discord.gg/rRBvGkz"
+				"modmenu.discord": "https://discord.gg/rRBvGkz",
+				"modmenu.donate": "https://ko-fi.com/snownee"
 			}
 		}
 	}
