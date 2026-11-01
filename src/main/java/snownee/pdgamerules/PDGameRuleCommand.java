@@ -5,96 +5,87 @@ import java.util.Map;
 import com.google.common.collect.Maps;
 import com.mojang.brigadier.CommandDispatcher;
 import com.mojang.brigadier.builder.LiteralArgumentBuilder;
-import com.mojang.brigadier.builder.RequiredArgumentBuilder;
 import com.mojang.brigadier.context.CommandContext;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import com.mojang.brigadier.exceptions.SimpleCommandExceptionType;
 
+import net.minecraft.commands.CommandBuildContext;
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.commands.Commands;
 import net.minecraft.network.chat.Component;
-import net.minecraft.world.level.GameRules;
 import net.minecraft.world.level.Level;
+import net.minecraft.world.level.gamerules.GameRule;
+import net.minecraft.world.level.gamerules.GameRuleTypeVisitor;
+import net.minecraft.world.level.gamerules.GameRules;
 import snownee.kiwi.config.KiwiConfigManager;
-import snownee.pdgamerules.mixin.GameRulesValueAccess;
 
 public class PDGameRuleCommand {
 	private static final SimpleCommandExceptionType ERROR_OVERWORLD = new SimpleCommandExceptionType(Component.translatable(
 			"commands.pdgamerules.overworldCheck.failed"));
 
-	public static void register(CommandDispatcher<CommandSourceStack> commandDispatcher) {
+	public static void register(CommandDispatcher<CommandSourceStack> commandDispatcher, CommandBuildContext context) {
 		final LiteralArgumentBuilder<CommandSourceStack> literalArgumentBuilder = Commands.literal("pdgamerule")
-				.requires(commandSourceStack -> commandSourceStack.hasPermission(2));
-		GameRules.visitGameRuleTypes(new GameRules.GameRuleTypeVisitor() {
+				.requires(Commands.hasPermission(Commands.LEVEL_GAMEMASTERS));
+		new GameRules(context.enabledFeatures()).visitGameRuleTypes(new GameRuleTypeVisitor() {
 
 			@Override
-			public <T extends GameRules.Value<T>> void visit(GameRules.Key<T> key, GameRules.Type<T> type) {
-				if (!PDGameRulesMod.isSupported(key)) {
+			public <T> void visit(GameRule<T> rule) {
+				if (!PDGameRulesMod.isSupported(rule)) {
 					return;
 				}
-				try {
-					RequiredArgumentBuilder<CommandSourceStack, ?> setNode = PDGameRulesMod.getPlatformNode(key, type);
-					if (setNode == null) {
-						setNode = type.createArgument("value");
-					}
-					literalArgumentBuilder.then(Commands.literal(key.getId())
-							.executes(commandContext -> PDGameRuleCommand.queryRule(commandContext.getSource(), key))
-							.then(setNode.executes(commandContext -> PDGameRuleCommand.setRule(commandContext, key)))
-							.then(Commands.literal("clear!").executes(commandContext -> PDGameRuleCommand.clearRule(commandContext, key))));
-				} catch (Exception e) {
-					PDGameRulesMod.LOGGER.error("Failed to register command for " + key.getId(), e);
-				}
+				literalArgumentBuilder.then(Commands.literal(rule.id())
+						.executes(commandContext -> PDGameRuleCommand.queryRule(commandContext.getSource(), rule))
+						.then(Commands.argument("value", rule.argument())
+								.executes(commandContext -> PDGameRuleCommand.setRule(commandContext, rule)))
+						.then(Commands.literal("clear!").executes(commandContext -> PDGameRuleCommand.clearRule(commandContext, rule))));
 			}
 
 		});
 		commandDispatcher.register(literalArgumentBuilder);
 	}
 
-	static <T extends GameRules.Value<T>> int setRule(
-			CommandContext<CommandSourceStack> commandContext, GameRules.Key<T> key) throws CommandSyntaxException {
+	static <T> int setRule(
+			CommandContext<CommandSourceStack> commandContext, GameRule<T> rule) throws CommandSyntaxException {
 		CommandSourceStack commandSourceStack = commandContext.getSource();
-		checkOverworld(commandSourceStack, key);
-		//noinspection unchecked
-		T value = ((GameRulesValueAccess<T>) commandSourceStack.getLevel().getGameRules().getRule(key)).getType().createRule();
-		// though the PDGameRules object will be replaced immediately, we still need to check if the value is valid
-		value.setFromArgument(commandContext, "value");
-		String dimension = commandSourceStack.getLevel().dimension().location().toString();
+		checkOverworld(commandSourceStack, rule);
+		T value = commandContext.getArgument("value", rule.valueClass());
+		String dimension = commandSourceStack.getLevel().dimension().identifier().toString();
 		Map<String, Object> map = PDGameRulesConfig.rules.computeIfAbsent(dimension, k -> Maps.newHashMap());
-		String serialized = value.serialize();
-		map.put(key.getId(), serialized);
+		String serialized = rule.serialize(value);
+		map.put(rule.id(), serialized);
 		KiwiConfigManager.getHandler(PDGameRulesConfig.class).save();
-		PDGameRulesMod.onPDRuleChange(commandSourceStack.getLevel(), key, serialized);
-		commandSourceStack.sendSuccess(() -> Component.translatable("commands.gamerule.set", key.getId(), value.toString()), true);
-		return value.getCommandResult();
+		PDGameRulesMod.onPDRuleChange(commandSourceStack.getLevel(), rule, serialized);
+		commandSourceStack.sendSuccess(() -> Component.translatable("commands.gamerule.set", rule.id(), serialized), true);
+		return rule.getCommandResult(value);
 	}
 
-	static <T extends GameRules.Value<T>> int clearRule(
-			CommandContext<CommandSourceStack> commandContext, GameRules.Key<T> key) throws CommandSyntaxException {
+	static <T> int clearRule(
+			CommandContext<CommandSourceStack> commandContext, GameRule<T> rule) throws CommandSyntaxException {
 		CommandSourceStack commandSourceStack = commandContext.getSource();
-		checkOverworld(commandSourceStack, key);
-		String dimension = commandSourceStack.getLevel().dimension().location().toString();
+		checkOverworld(commandSourceStack, rule);
+		String dimension = commandSourceStack.getLevel().dimension().identifier().toString();
 		Map<String, Object> map = PDGameRulesConfig.rules.get(dimension);
-		if (map == null || !map.containsKey(key.getId())) {
-			commandSourceStack.sendFailure(Component.translatable("commands.pdgamerules.clear.failed", key.getId()));
+		if (map == null || !map.containsKey(rule.id())) {
+			commandSourceStack.sendFailure(Component.translatable("commands.pdgamerules.clear.failed", rule.id()));
 			return 0;
 		}
-		map.remove(key.getId());
+		map.remove(rule.id());
 		KiwiConfigManager.getHandler(PDGameRulesConfig.class).save();
-		PDGameRulesMod.onPDRuleChange(commandSourceStack.getLevel(), key, null);
-		commandSourceStack.sendSuccess(() -> Component.translatable("commands.pdgamerules.clear", key.getId()), true);
+		PDGameRulesMod.onPDRuleChange(commandSourceStack.getLevel(), rule, null);
+		commandSourceStack.sendSuccess(() -> Component.translatable("commands.pdgamerules.clear", rule.id()), true);
 		return 1;
 	}
 
-	static <T extends GameRules.Value<T>> int queryRule(
-			CommandSourceStack commandSourceStack, GameRules.Key<T> key) throws CommandSyntaxException {
-		checkOverworld(commandSourceStack, key);
-		T value = commandSourceStack.getLevel().getGameRules().getRule(key);
-		commandSourceStack.sendSuccess(() -> Component.translatable("commands.gamerule.query", key.getId(), value.toString()), false);
-		return value.getCommandResult();
+	static <T> int queryRule(
+			CommandSourceStack commandSourceStack, GameRule<T> rule) throws CommandSyntaxException {
+		checkOverworld(commandSourceStack, rule);
+		T value = commandSourceStack.getLevel().getGameRules().get(rule);
+		commandSourceStack.sendSuccess(() -> Component.translatable("commands.gamerule.query", rule.id(), rule.serialize(value)), false);
+		return rule.getCommandResult(value);
 	}
 
-	static void checkOverworld(CommandSourceStack source, GameRules.Key<?> key) throws CommandSyntaxException {
-		if (source.getLevel().dimension() == Level.OVERWORLD && !PDGameRulesMod.canUseInOverworld(key)) {
+	static void checkOverworld(CommandSourceStack source, GameRule<?> rule) throws CommandSyntaxException {
+		if (Level.OVERWORLD.equals(source.getLevel().dimension()) && !PDGameRulesMod.canUseInOverworld(rule)) {
 			throw ERROR_OVERWORLD.create();
 		}
 	}

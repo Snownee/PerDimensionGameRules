@@ -1,7 +1,9 @@
 package snownee.pdgamerules;
 
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.stream.Stream;
 
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -10,13 +12,15 @@ import com.google.common.cache.Cache;
 import com.google.common.cache.CacheBuilder;
 import com.google.common.collect.Sets;
 
-import net.minecraft.nbt.CompoundTag;
+import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.server.MinecraftServer;
-import net.minecraft.world.level.GameRules;
+import net.minecraft.world.flag.FeatureFlagSet;
 import net.minecraft.world.level.Level;
-import snownee.pdgamerules.mixin.GameRulesAccess;
-import snownee.pdgamerules.mixin.GameRulesValueAccess;
+import net.minecraft.world.level.gamerules.GameRule;
+import net.minecraft.world.level.gamerules.GameRuleMap;
+import net.minecraft.world.level.gamerules.GameRuleTypeVisitor;
+import net.minecraft.world.level.gamerules.GameRules;
 
 public class PDGameRules extends GameRules {
 	private static final Set<String> VALID_RULES = Sets.newHashSet();
@@ -28,48 +32,56 @@ public class PDGameRules extends GameRules {
 	@Nullable
 	private final String dimensionType;
 	private final boolean overworld;
-	private final Cache<Key<?>, Value<?>> cache = CacheBuilder.newBuilder().build();
+	private final Cache<GameRule<?>, Object> cache = CacheBuilder.newBuilder().build();
 
 	public PDGameRules(GameRules parent, ResourceKey<Level> dimension, @Nullable String dimensionType) {
+		super(List.of());
 		this.parent = parent;
-		this.dimension = dimension.location().toString();
+		this.dimension = dimension.identifier().toString();
 		this.dimensionType = dimensionType;
 		this.overworld = Level.OVERWORLD.equals(dimension);
-		((GameRulesAccess) this).setRules(Map.of());
 		validateRules();
 	}
 
 	@SuppressWarnings("unchecked")
 	@Override
-	public <T extends Value<T>> @NotNull T getRule(Key<T> key) {
+	public <T> @NotNull T get(GameRule<T> rule) {
 		try {
-			return (T) cache.get(key, () -> resolveRule(key));
+			return (T) cache.get(rule, () -> resolveRule(rule));
 		} catch (Exception ignored) {
 		}
-		return parent.getRule(key);
+		return parent.get(rule);
 	}
 
-	private <T extends Value<T>> Value<T> resolveRule(Key<T> key) {
-		Value<T> value = parseRule(dimension, key);
+	private <T> Object resolveRule(GameRule<T> rule) {
+		T value = parseRule(dimension, rule);
 		if (value == null && dimensionType != null) {
-			value = parseRule(PDGameRulesConfig.DIMENSION_TYPE_PREFIX + dimensionType, key);
+			value = parseRule(PDGameRulesConfig.DIMENSION_TYPE_PREFIX + dimensionType, rule);
 		}
-		return value == null ? parent.getRule(key) : value;
+		return value == null ? parent.get(rule) : value;
 	}
 
-	@SuppressWarnings("unchecked")
-	private <T extends Value<T>> Value<T> parseRule(String layer, Key<T> key) {
-		Object rawValue = PDGameRulesConfig.rules.getOrDefault(layer, Map.of()).get(key.getId());
-		if (rawValue == null || overworld && !PDGameRulesMod.canUseInOverworld(key)) {
+	public boolean hasExplicitRule(GameRule<?> rule) {
+		if (overworld && !PDGameRulesMod.canUseInOverworld(rule)) {
+			return false;
+		}
+		if (PDGameRulesConfig.rules.getOrDefault(dimension, Map.of()).containsKey(rule.id())) {
+			return true;
+		}
+		return dimensionType != null && PDGameRulesConfig.rules
+				.getOrDefault(PDGameRulesConfig.DIMENSION_TYPE_PREFIX + dimensionType, Map.of())
+				.containsKey(rule.id());
+	}
+
+	private <T> @Nullable T parseRule(String layer, GameRule<T> rule) {
+		Object rawValue = PDGameRulesConfig.rules.getOrDefault(layer, Map.of()).get(rule.id());
+		if (rawValue == null || overworld && !PDGameRulesMod.canUseInOverworld(rule)) {
 			return null;
 		}
 		try {
-			Type<T> type = ((GameRulesValueAccess<T>) parent.getRule(key)).getType();
-			Value<T> value = type.createRule();
-			((GameRulesValueAccess<T>) value).callDeserialize(String.valueOf(rawValue));
-			return value;
+			return rule.deserialize(String.valueOf(rawValue)).result().orElse(null);
 		} catch (Exception e) {
-			warnOnce(key.getId(), "Failed to parse game rule '{}' in config layer '{}': {}", key.getId(), layer, rawValue);
+			warnOnce(rule.id(), "Failed to parse game rule '{}' in config layer '{}': {}", rule.id(), layer, rawValue);
 			return null;
 		}
 	}
@@ -79,13 +91,9 @@ public class PDGameRules extends GameRules {
 			return;
 		}
 		validated = true;
+		PDGameRulesConfig.migrateLegacyRuleNames();
 		VALID_RULES.clear();
-		GameRules.visitGameRuleTypes(new GameRules.GameRuleTypeVisitor() {
-			@Override
-			public <T extends Value<T>> void visit(Key<T> key, Type<T> type) {
-				VALID_RULES.add(key.getId());
-			}
-		});
+		BuiltInRegistries.GAME_RULE.listElements().forEach($ -> VALID_RULES.add($.value().id()));
 		PDGameRulesConfig.rules.forEach((layer, layerRules) -> {
 			for (String rule : layerRules.keySet()) {
 				if (!VALID_RULES.contains(rule)) {
@@ -104,6 +112,8 @@ public class PDGameRules extends GameRules {
 	public static void onConfigReload() {
 		validated = false;
 		PDGameRulesMod.iterateGeneration();
+		PDGameRulesMod.applyClockStates();
+		PDGameRulesMod.refreshIndependentWeather(true);
 	}
 
 	public void invalidate() {
@@ -111,17 +121,37 @@ public class PDGameRules extends GameRules {
 	}
 
 	@Override
-	public void assignFrom(GameRules rules, @Nullable MinecraftServer server) {
-		parent.assignFrom(rules, server);
+	public <T> void set(GameRule<T> rule, T value, @Nullable MinecraftServer server) {
+		parent.set(rule, value, server);
 	}
 
 	@Override
-	public @NotNull GameRules copy() {
-		return parent.copy();
+	public <T> String getAsString(GameRule<T> rule) {
+		return rule.serialize(get(rule));
 	}
 
 	@Override
-	public @NotNull CompoundTag createTag() {
-		return parent.createTag();
+	public GameRules copy(FeatureFlagSet enabledFeatures) {
+		return parent.copy(enabledFeatures);
+	}
+
+	@Override
+	public void setAll(GameRules other, @Nullable MinecraftServer server) {
+		parent.setAll(other, server);
+	}
+
+	@Override
+	public void setAll(GameRuleMap gameRulesMap, @Nullable MinecraftServer server) {
+		parent.setAll(gameRulesMap, server);
+	}
+
+	@Override
+	public @NotNull Stream<GameRule<?>> availableRules() {
+		return parent.availableRules();
+	}
+
+	@Override
+	public void visitGameRuleTypes(GameRuleTypeVisitor visitor) {
+		parent.visitGameRuleTypes(visitor);
 	}
 }

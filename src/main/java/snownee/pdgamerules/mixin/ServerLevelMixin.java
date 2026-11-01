@@ -1,53 +1,73 @@
 package snownee.pdgamerules.mixin;
 
-import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
-import org.spongepowered.asm.mixin.Mutable;
-import org.spongepowered.asm.mixin.Shadow;
+import org.spongepowered.asm.mixin.Unique;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
-import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
+import org.spongepowered.asm.mixin.injection.Redirect;
+import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
-import com.llamalad7.mixinextras.injector.wrapoperation.Operation;
-import com.llamalad7.mixinextras.injector.wrapoperation.WrapOperation;
-
+import net.minecraft.network.protocol.Packet;
+import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerLevel;
-import net.minecraft.world.level.GameRules;
-import net.minecraft.world.level.storage.ServerLevelData;
-import net.minecraft.world.level.storage.WritableLevelData;
-import snownee.pdgamerules.duck.PDDerivedLevelData;
+import net.minecraft.server.players.PlayerList;
+import net.minecraft.world.level.gamerules.GameRules;
+import net.minecraft.world.level.saveddata.WeatherData;
+import snownee.pdgamerules.PDGameRules;
+import snownee.pdgamerules.PDGameRulesMod;
 
 @Mixin(ServerLevel.class)
-public abstract class ServerLevelMixin {
+public class ServerLevelMixin {
+	@Unique
+	private PDGameRules pdgamerules$gameRules;
+	@Unique
+	private int pdgamerules$generation = -1;
 
-	@Mutable
-	@Shadow
-	@Final
-	private boolean tickTime;
-
-	@Shadow
-	protected abstract void tickTime();
-
-	@Shadow
-	@Final
-	private ServerLevelData serverLevelData;
-
-	@WrapOperation(
-			method = "tickTime",
-			at = @At(
-					value = "INVOKE",
-					target = "Lnet/minecraft/world/level/storage/WritableLevelData;getGameRules()Lnet/minecraft/world/level/GameRules;"))
-	private GameRules pdgamerules_getGameRules(WritableLevelData levelData, Operation<GameRules> original) {
-		return ((ServerLevel) (Object) this).getGameRules();
+	@Inject(method = "getGameRules", at = @At("HEAD"), cancellable = true)
+	private void pdgamerules_getGameRules(CallbackInfoReturnable<GameRules> ci) {
+		if (pdgamerules$generation != PDGameRulesMod.getGeneration()) {
+			pdgamerules$generation = PDGameRulesMod.getGeneration();
+			pdgamerules$gameRules = null;
+			PDGameRulesMod.LOGGER.debug("Invalidating game rules cache");
+		}
+		if (pdgamerules$gameRules == null) {
+			ServerLevel level = (ServerLevel) (Object) this;
+			pdgamerules$gameRules = new PDGameRules(
+					level.getServer().getGameRules(),
+					level.dimension(),
+					level.dimensionTypeRegistration().unwrapKey().map($ -> $.identifier().toString()).orElse(null));
+		}
+		ci.setReturnValue(pdgamerules$gameRules);
 	}
 
-	@Inject(method = "tickTime", at = @At("HEAD"))
-	private void pdgamerules_forceTickTime(CallbackInfo ci) {
-		if (!tickTime && serverLevelData instanceof PDDerivedLevelData data && data.pdgamerules$isIndependentDayTime()) {
-			tickTime = true;
-			tickTime();
-			tickTime = false;
+	@Inject(method = "getWeatherData", at = @At("HEAD"), cancellable = true)
+	private void pdgamerules_getWeatherData(CallbackInfoReturnable<WeatherData> ci) {
+		ServerLevel level = (ServerLevel) (Object) this;
+		if (PDGameRulesMod.hasIndependentWeather(level)) {
+			ci.setReturnValue(PDGameRulesMod.getIndependentWeather(level));
 		}
+	}
+
+	@Redirect(
+			method = "<init>",
+			at = @At(
+					value = "INVOKE",
+					target = "Lnet/minecraft/server/MinecraftServer;getWeatherData()Lnet/minecraft/world/level/saveddata/WeatherData;"))
+	private WeatherData pdgamerules_prepareWeather(MinecraftServer server) {
+		ServerLevel level = (ServerLevel) (Object) this;
+		if (PDGameRulesMod.hasIndependentWeather(level)) {
+			return PDGameRulesMod.getIndependentWeather(level);
+		}
+		return server.getWeatherData();
+	}
+
+	@Redirect(
+			method = "advanceWeatherCycle",
+			at = @At(
+					value = "INVOKE",
+					target = "Lnet/minecraft/server/players/PlayerList;broadcastAll(Lnet/minecraft/network/protocol/Packet;)V"))
+	private void pdgamerules_broadcastWeather(PlayerList playerList, Packet<?> packet) {
+		playerList.broadcastAll(packet, ((ServerLevel) (Object) this).dimension());
 	}
 
 }

@@ -2,21 +2,10 @@
 	"required": true,
 	"minVersion": "0.8",
 	"package": "snownee.pdgamerules.mixin",
-	"compatibilityLevel": "JAVA_16",
-	"refmap": "pdgamerules.refmap.json",
+	"compatibilityLevel": "JAVA_25",
 	"mixins": [
-		"DerivedLevelDataMixin",
-		"GameRulesAccess",
-		"GameRulesTypeAccess",
-		"GameRulesValueAccess",
-		"GameRulesValueMixin",
-		"LevelMixin",
 		"MinecraftServerMixin",
-		"PrimaryLevelDataMixin",
-		"ServerLevelMixin",
-		"ServerPlayerMixin"
-	],
-	"client": [
+		"ServerLevelMixin"
 	],
 	"injectors": {
 		"defaultRequire": 1

@@ -23,8 +23,8 @@
 	],
 	"depends": {
 		"fabric-api": "*",
-		"kiwi": ">=15.1",
-		"minecraft": ">=1.21"
+		"kiwi": ">=26.0.20",
+		"minecraft": ">=26.1"
 	},
 	"custom": {
 		"modmenu": {

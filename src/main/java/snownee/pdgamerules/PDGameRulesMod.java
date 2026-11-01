@@ -6,41 +6,56 @@ import org.jetbrains.annotations.Nullable;
 import org.slf4j.Logger;
 
 import com.google.common.collect.Sets;
-import com.mojang.brigadier.builder.RequiredArgumentBuilder;
 import com.mojang.logging.LogUtils;
 
 import net.fabricmc.api.ModInitializer;
 import net.fabricmc.fabric.api.command.v2.CommandRegistrationCallback;
-import net.minecraft.commands.CommandSourceStack;
+import net.fabricmc.fabric.api.event.lifecycle.v1.ServerLifecycleEvents;
+import net.minecraft.resources.ResourceKey;
+import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerLevel;
-import net.minecraft.world.level.GameRules;
+import net.minecraft.world.level.Level;
+import net.minecraft.world.level.gamerules.GameRule;
+import net.minecraft.world.level.gamerules.GameRules;
+import net.minecraft.world.level.saveddata.WeatherData;
 import snownee.kiwi.Mod;
-import snownee.pdgamerules.duck.PDDerivedLevelData;
 
 @Mod("pdgamerules")
 public class PDGameRulesMod implements ModInitializer {
 
 	public static final Logger LOGGER = LogUtils.getLogger();
-	public static final Set<GameRules.Key<?>> UNSUPPORTED_GAME_RULES = Sets.newHashSet();
-	public static final Set<GameRules.Key<?>> UNSUPPORTED_GAME_RULES_OVERWORLD = Sets.newHashSet();
+	public static final Set<GameRule<?>> UNSUPPORTED_GAME_RULES = Sets.newHashSet();
+	public static final Set<GameRule<?>> UNSUPPORTED_GAME_RULES_OVERWORLD = Sets.newHashSet();
+	private static final Set<ResourceKey<Level>> INDEPENDENT_WEATHER_DIMENSIONS = Sets.newHashSet();
 	private static int generation = 0;
+	@Nullable
+	private static MinecraftServer server;
 
 	@Override
 	public void onInitialize() {
-		UNSUPPORTED_GAME_RULES.add(GameRules.RULE_SENDCOMMANDFEEDBACK);
-		UNSUPPORTED_GAME_RULES.add(GameRules.RULE_MAX_COMMAND_CHAIN_LENGTH);
-		UNSUPPORTED_GAME_RULES.add(GameRules.RULE_REDUCEDDEBUGINFO);
-		UNSUPPORTED_GAME_RULES_OVERWORLD.add(GameRules.RULE_DAYLIGHT);
-		UNSUPPORTED_GAME_RULES_OVERWORLD.add(GameRules.RULE_WEATHER_CYCLE);
-		CommandRegistrationCallback.EVENT.register((dispatcher, registryAccess, environment) -> PDGameRuleCommand.register(dispatcher));
+		UNSUPPORTED_GAME_RULES.add(GameRules.SEND_COMMAND_FEEDBACK);
+		UNSUPPORTED_GAME_RULES.add(GameRules.MAX_COMMAND_SEQUENCE_LENGTH);
+		UNSUPPORTED_GAME_RULES.add(GameRules.REDUCED_DEBUG_INFO);
+		UNSUPPORTED_GAME_RULES_OVERWORLD.add(GameRules.ADVANCE_TIME);
+		UNSUPPORTED_GAME_RULES_OVERWORLD.add(GameRules.ADVANCE_WEATHER);
+		CommandRegistrationCallback.EVENT.register((dispatcher, context, environment) -> PDGameRuleCommand.register(dispatcher, context));
+		ServerLifecycleEvents.SERVER_STARTED.register($ -> {
+			server = $;
+			applyClockStates();
+			refreshIndependentWeather(false);
+		});
+		ServerLifecycleEvents.SERVER_STOPPED.register($ -> {
+			server = null;
+			INDEPENDENT_WEATHER_DIMENSIONS.clear();
+		});
 	}
 
-	public static boolean isSupported(GameRules.Key<?> key) {
-		return !UNSUPPORTED_GAME_RULES.contains(key);
+	public static boolean isSupported(GameRule<?> rule) {
+		return !UNSUPPORTED_GAME_RULES.contains(rule);
 	}
 
-	public static boolean canUseInOverworld(GameRules.Key<?> key) {
-		return !UNSUPPORTED_GAME_RULES_OVERWORLD.contains(key);
+	public static boolean canUseInOverworld(GameRule<?> rule) {
+		return !UNSUPPORTED_GAME_RULES_OVERWORLD.contains(rule);
 	}
 
 	public static int getGeneration() {
@@ -51,33 +66,87 @@ public class PDGameRulesMod implements ModInitializer {
 		generation++;
 	}
 
-	public static void onPDRuleChange(ServerLevel level, GameRules.Key<?> key, @Nullable String value) {
-		if (key == GameRules.RULE_DAYLIGHT || key == GameRules.RULE_WEATHER_CYCLE) {
-			if (level.getLevelData() instanceof PDDerivedLevelData data) {
-				if (key == GameRules.RULE_DAYLIGHT) {
-					data.pdgamerules$setIndependentDayTime(value != null);
-				} else {
-					data.pdgamerules$setIndependentWeather(value != null);
-				}
-			}
-		}
+	public static void onPDRuleChange(ServerLevel level, GameRule<?> rule, @Nullable String value) {
 		iterateGeneration();
+		if (rule == GameRules.ADVANCE_TIME) {
+			applyClockStates();
+		}
+		if (rule == GameRules.ADVANCE_WEATHER) {
+			refreshIndependentWeather(true);
+		}
 	}
 
-	@SuppressWarnings("unchecked")
-	public static <T extends GameRules.Value<T>, E extends Enum<E>> RequiredArgumentBuilder<CommandSourceStack, ?> getPlatformNode(
-			GameRules.Key<T> key,
-			GameRules.Type<T> type) {
-//		GameRulesTypeAccess<T> typeAccess = (GameRulesTypeAccess<T>) type;
-//		if (typeAccess.getArgument() == null && type.createRule() instanceof EnumRule<?> wildcardRule) {
-//			EnumRule<E> rule = (EnumRule<E>) wildcardRule;
-//			for (E enumConstant : rule.getEnumClass().getEnumConstants()) {
-//				if (!rule.supports(enumConstant)) {
-//					continue;
-//				}
-//			}
-//		}
-		return null;
+	public static void onGlobalRuleChange(GameRule<?> rule) {
+		iterateGeneration();
+		if (rule == GameRules.ADVANCE_TIME) {
+			applyClockStates();
+		}
+	}
+
+	/**
+	 * Vanilla ticks all world clocks based on the global game rules. Pause the clock of a dimension
+	 * when its own {@code advance_time} rule is disabled, so per-dimension time still works.
+	 */
+	public static void applyClockStates() {
+		MinecraftServer server = PDGameRulesMod.server;
+		if (server == null) {
+			return;
+		}
+		if (Thread.currentThread() != server.getRunningThread()) {
+			server.executeIfPossible(PDGameRulesMod::applyClockStates);
+			return;
+		}
+		for (ServerLevel level : server.getAllLevels()) {
+			level.dimensionType().defaultClock().ifPresent(clock -> {
+				boolean advanceTime = level.getGameRules().get(GameRules.ADVANCE_TIME);
+				server.clockManager().setPaused(clock, !advanceTime);
+			});
+		}
+	}
+
+	/**
+	 * A dimension gets its own weather data as soon as {@code advance_weather} is configured for it.
+	 * The data is stored in that dimension's own saved data directory, just like vanilla stores it
+	 * for the overworld.
+	 */
+	public static boolean hasIndependentWeather(ServerLevel level) {
+		return level.getGameRules() instanceof PDGameRules rules && rules.hasExplicitRule(GameRules.ADVANCE_WEATHER);
+	}
+
+	public static WeatherData getIndependentWeather(ServerLevel level) {
+		return level.getDataStorage().computeIfAbsent(WeatherData.TYPE);
+	}
+
+	public static void refreshIndependentWeather(boolean copyNewDimensions) {
+		MinecraftServer server = PDGameRulesMod.server;
+		if (server == null) {
+			return;
+		}
+		if (Thread.currentThread() != server.getRunningThread()) {
+			server.executeIfPossible(() -> refreshIndependentWeather(copyNewDimensions));
+			return;
+		}
+		Set<ResourceKey<Level>> current = Sets.newHashSet();
+		for (ServerLevel level : server.getAllLevels()) {
+			if (!hasIndependentWeather(level)) {
+				continue;
+			}
+			ResourceKey<Level> dimension = level.dimension();
+			current.add(dimension);
+			if (copyNewDimensions && !INDEPENDENT_WEATHER_DIMENSIONS.contains(dimension)) {
+				copyWeather(server.getWeatherData(), getIndependentWeather(level));
+			}
+		}
+		INDEPENDENT_WEATHER_DIMENSIONS.clear();
+		INDEPENDENT_WEATHER_DIMENSIONS.addAll(current);
+	}
+
+	private static void copyWeather(WeatherData from, WeatherData to) {
+		to.setClearWeatherTime(from.getClearWeatherTime());
+		to.setRainTime(from.getRainTime());
+		to.setThunderTime(from.getThunderTime());
+		to.setRaining(from.isRaining());
+		to.setThundering(from.isThundering());
 	}
 
 }
