@@ -5,7 +5,6 @@ import java.util.Map;
 import java.util.Set;
 import java.util.stream.Stream;
 
-import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import com.google.common.cache.Cache;
@@ -45,7 +44,7 @@ public class PDGameRules extends GameRules {
 
 	@SuppressWarnings("unchecked")
 	@Override
-	public <T> @NotNull T get(GameRule<T> rule) {
+	public <T> T get(GameRule<T> rule) {
 		try {
 			return (T) cache.get(rule, () -> resolveRule(rule));
 		} catch (Exception ignored) {
@@ -146,7 +145,7 @@ public class PDGameRules extends GameRules {
 	}
 
 	@Override
-	public @NotNull Stream<GameRule<?>> availableRules() {
+	public Stream<GameRule<?>> availableRules() {
 		return parent.availableRules();
 	}
 

@@ -1,5 +1,6 @@
 package snownee.pdgamerules.mixin;
 
+import org.jspecify.annotations.Nullable;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Unique;
 import org.spongepowered.asm.mixin.injection.At;
@@ -17,7 +18,7 @@ import snownee.pdgamerules.PDGameRulesMod;
 @Mixin(ServerLevel.class)
 public class ServerLevelMixin {
 	@Unique
-	private PDGameRules pdgamerules$gameRules;
+	private @Nullable PDGameRules pdgamerules$gameRules;
 	@Unique
 	private int pdgamerules$generation = -1;
 
