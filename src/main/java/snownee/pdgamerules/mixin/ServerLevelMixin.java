@@ -7,10 +7,8 @@ import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.Redirect;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
-import net.minecraft.network.protocol.Packet;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerLevel;
-import net.minecraft.server.players.PlayerList;
 import net.minecraft.world.level.gamerules.GameRules;
 import net.minecraft.world.level.saveddata.WeatherData;
 import snownee.pdgamerules.PDGameRules;
@@ -59,15 +57,6 @@ public class ServerLevelMixin {
 			return PDGameRulesMod.getIndependentWeather(level);
 		}
 		return server.getWeatherData();
-	}
-
-	@Redirect(
-			method = "advanceWeatherCycle",
-			at = @At(
-					value = "INVOKE",
-					target = "Lnet/minecraft/server/players/PlayerList;broadcastAll(Lnet/minecraft/network/protocol/Packet;)V"))
-	private void pdgamerules_broadcastWeather(PlayerList playerList, Packet<?> packet) {
-		playerList.broadcastAll(packet, ((ServerLevel) (Object) this).dimension());
 	}
 
 }

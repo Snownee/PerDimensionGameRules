@@ -8,9 +8,6 @@ import org.slf4j.Logger;
 import com.google.common.collect.Sets;
 import com.mojang.logging.LogUtils;
 
-import net.fabricmc.api.ModInitializer;
-import net.fabricmc.fabric.api.command.v2.CommandRegistrationCallback;
-import net.fabricmc.fabric.api.event.lifecycle.v1.ServerLifecycleEvents;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerLevel;
@@ -18,10 +15,15 @@ import net.minecraft.world.level.Level;
 import net.minecraft.world.level.gamerules.GameRule;
 import net.minecraft.world.level.gamerules.GameRules;
 import net.minecraft.world.level.saveddata.WeatherData;
-import snownee.kiwi.Mod;
+import net.neoforged.fml.common.Mod;
+import net.neoforged.neoforge.common.NeoForge;
+import net.neoforged.neoforge.event.RegisterCommandsEvent;
+import net.neoforged.neoforge.event.level.GameRuleChangedEvent;
+import net.neoforged.neoforge.event.server.ServerStartedEvent;
+import net.neoforged.neoforge.event.server.ServerStoppedEvent;
 
 @Mod("pdgamerules")
-public class PDGameRulesMod implements ModInitializer {
+public class PDGameRulesMod {
 
 	public static final Logger LOGGER = LogUtils.getLogger();
 	public static final Set<GameRule<?>> UNSUPPORTED_GAME_RULES = Sets.newHashSet();
@@ -31,23 +33,35 @@ public class PDGameRulesMod implements ModInitializer {
 	@Nullable
 	private static MinecraftServer server;
 
-	@Override
-	public void onInitialize() {
+	public PDGameRulesMod() {
 		UNSUPPORTED_GAME_RULES.add(GameRules.SEND_COMMAND_FEEDBACK);
 		UNSUPPORTED_GAME_RULES.add(GameRules.MAX_COMMAND_SEQUENCE_LENGTH);
 		UNSUPPORTED_GAME_RULES.add(GameRules.REDUCED_DEBUG_INFO);
 		UNSUPPORTED_GAME_RULES_OVERWORLD.add(GameRules.ADVANCE_TIME);
 		UNSUPPORTED_GAME_RULES_OVERWORLD.add(GameRules.ADVANCE_WEATHER);
-		CommandRegistrationCallback.EVENT.register((dispatcher, context, environment) -> PDGameRuleCommand.register(dispatcher, context));
-		ServerLifecycleEvents.SERVER_STARTED.register($ -> {
-			server = $;
-			applyClockStates();
-			refreshIndependentWeather(false);
-		});
-		ServerLifecycleEvents.SERVER_STOPPED.register($ -> {
-			server = null;
-			INDEPENDENT_WEATHER_DIMENSIONS.clear();
-		});
+		NeoForge.EVENT_BUS.addListener(this::registerCommands);
+		NeoForge.EVENT_BUS.addListener(this::onGameRuleChanged);
+		NeoForge.EVENT_BUS.addListener(this::onServerStarted);
+		NeoForge.EVENT_BUS.addListener(this::onServerStopped);
+	}
+
+	private void registerCommands(RegisterCommandsEvent event) {
+		PDGameRuleCommand.register(event.getDispatcher(), event.getBuildContext());
+	}
+
+	private void onGameRuleChanged(GameRuleChangedEvent event) {
+		onGlobalRuleChange(event.getGameRule());
+	}
+
+	private void onServerStarted(ServerStartedEvent event) {
+		server = event.getServer();
+		applyClockStates();
+		refreshIndependentWeather(false);
+	}
+
+	private void onServerStopped(ServerStoppedEvent event) {
+		server = null;
+		INDEPENDENT_WEATHER_DIMENSIONS.clear();
 	}
 
 	public static boolean isSupported(GameRule<?> rule) {

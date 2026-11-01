@@ -4,7 +4,6 @@
 	"package": "snownee.pdgamerules.mixin",
 	"compatibilityLevel": "JAVA_25",
 	"mixins": [
-		"MinecraftServerMixin",
 		"ServerLevelMixin"
 	],
 	"injectors": {

@@ -1,0 +1,35 @@
+modLoader = "javafml"
+loaderVersion = "[1,)"
+license = "ARR"
+
+[[mods]]
+modId = "pdgamerules"
+version = "${file.jarVersion}"
+displayName = "Per-Dimension Game Rules"
+authors = "Snownee"
+displayURL = "https://www.curseforge.com/minecraft/mc-mods/per-world-game-rules"
+description = "Adds dimensional game rules - /pdgamerule command"
+
+[[mixins]]
+config = "pdgamerules.mixins.json"
+
+[[dependencies.pdgamerules]]
+modId = "neoforge"
+type = "required"
+versionRange = "[26.1.2.112,)"
+ordering = "NONE"
+side = "BOTH"
+
+[[dependencies.pdgamerules]]
+modId = "minecraft"
+type = "required"
+versionRange = "[26.1.2,26.2)"
+ordering = "NONE"
+side = "BOTH"
+
+[[dependencies.pdgamerules]]
+modId = "kiwi"
+type = "required"
+versionRange = "[26.0.20,)"
+ordering = "NONE"
+side = "BOTH"
