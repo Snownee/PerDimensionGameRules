@@ -36,7 +36,10 @@ public class LevelMixin {
 		}
 		if (pdgamerules$gameRules == null) {
 			Level level = (Level) (Object) this;
-			pdgamerules$gameRules = new PDGameRules(level.getLevelData().getGameRules(), level.dimension());
+			pdgamerules$gameRules = new PDGameRules(
+					level.getLevelData().getGameRules(),
+					level.dimension(),
+					level.dimensionTypeRegistration().unwrapKey().map($ -> $.location().toString()).orElse(null));
 		}
 		ci.setReturnValue(pdgamerules$gameRules);
 	}
